@@ -1,16 +1,46 @@
-import React from 'react';
-import { StyleSheet,Text,View,ImageBackground,Image,TextInput,TouchableOpacity,} from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, ImageBackground, Image, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { auth, db } from '../firebase.config';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 
-export default function Login({ navigation }) {
+export default function Cadastro({ navigation }) {
+  const [nome, setNome] = useState('');
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
+  const [confirmarSenha, setConfirmarSenha] = useState('');
+
+  const fazerCadastro = async () => {
+    if (!nome || !email || !senha || !confirmarSenha) {
+      Alert.alert('Erro', 'Preencha todos os campos!');
+      return;
+    }
+
+    if (senha !== confirmarSenha) {
+      Alert.alert('Erro', 'As senhas não conferem!');
+      return;
+    }
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
+      const user = userCredential.user;
+
+      await setDoc(doc(db, 'usuarios', user.uid), {
+        nome: nome,
+        email: email,
+        criadoEm: new Date(),
+      });
+
+      Alert.alert('Sucesso', 'Cadastro realizado!');
+      navigation.navigate('Login');
+    } catch (error) {
+      Alert.alert('Erro no cadastro', error.message);
+    }
+  };
+
   return (
-    <ImageBackground
-      source={require('../assets/fundo.png')}
-      style={styles.background}
-    >
-      <Image
-        source={require('../assets/logobranca.png')}
-        style={styles.logo}
-      />
+    <ImageBackground source={require('../assets/fundo.png')} style={styles.background}>
+      <Image source={require('../assets/logobranca.png')} style={styles.logo} />
 
       <View style={styles.card}>
         <Text style={styles.title}>Cadastro</Text>
@@ -20,14 +50,19 @@ export default function Login({ navigation }) {
           style={styles.input}
           placeholder=""
           placeholderTextColor="#AAA"
+          value={nome}
+          onChangeText={setNome}
         />
 
         <Text style={styles.label}>E-mail:</Text>
         <TextInput
           style={styles.input}
-          secureTextEntry
           placeholder=""
           placeholderTextColor="#AAA"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
         />
 
         <Text style={styles.label}>Digite sua senha:</Text>
@@ -36,6 +71,8 @@ export default function Login({ navigation }) {
           secureTextEntry
           placeholder=""
           placeholderTextColor="#AAA"
+          value={senha}
+          onChangeText={setSenha}
         />
 
         <Text style={styles.label}>Confirmar senha:</Text>
@@ -44,10 +81,12 @@ export default function Login({ navigation }) {
           secureTextEntry
           placeholder=""
           placeholderTextColor="#AAA"
+          value={confirmarSenha}
+          onChangeText={setConfirmarSenha}
         />
 
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>Entrar</Text>
+        <TouchableOpacity style={styles.button} onPress={fazerCadastro}>
+          <Text style={styles.buttonText}>Cadastrar</Text>
         </TouchableOpacity>
 
         <View style={styles.linksContainer}>
@@ -137,10 +176,5 @@ const styles = StyleSheet.create({
   link: {
     color: '#D86B2C',
     fontSize: 14,
-  },
-
-  divider: {
-    marginHorizontal: 8,
-    color: '#999',
   },
 });

@@ -1,7 +1,29 @@
-import React from 'react';
-import { StyleSheet,Text,View,ImageBackground,Image,TextInput,TouchableOpacity,} from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, ImageBackground, Image, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebase.config"; // <-- verifique se o caminho e nome do arquivo estão corretos
 
 export default function Login({ navigation }) {
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+
+  const fazerLogin = async () => {
+    if (!email || !senha) {
+      Alert.alert("Erro", "Preencha todos os campos!");
+      return;
+    }
+
+    try {
+      // tenta logar com Firebase
+      await signInWithEmailAndPassword(auth, email, senha);
+      Alert.alert("Sucesso", "Login realizado!");
+      navigation.navigate("Home");
+    } catch (erro) {
+      console.log("Erro Firebase:", erro);
+      Alert.alert("Erro no login", erro.message);
+    }
+  };
+
   return (
     <ImageBackground
       source={require('../assets/fundo.png')}
@@ -20,6 +42,10 @@ export default function Login({ navigation }) {
           style={styles.input}
           placeholder=""
           placeholderTextColor="#AAA"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
         />
 
         <Text style={styles.label}>Senha:</Text>
@@ -28,9 +54,11 @@ export default function Login({ navigation }) {
           secureTextEntry
           placeholder=""
           placeholderTextColor="#AAA"
+          value={senha}
+          onChangeText={setSenha}
         />
 
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity style={styles.button} onPress={fazerLogin}>
           <Text style={styles.buttonText}>Entrar</Text>
         </TouchableOpacity>
 
@@ -61,14 +89,13 @@ const styles = StyleSheet.create({
   logo: {
     width: 160,
     height: 160,
-    marginTop: 50,
     resizeMode: 'contain',
   },
 
   card: {
     width: '85%',
     backgroundColor: '#fff',
-    marginTop: 50,
+    marginTop: 20,
     paddingVertical: 25,
     paddingHorizontal: 20,
     borderRadius: 25,
@@ -123,6 +150,7 @@ const styles = StyleSheet.create({
   linksContainer: {
     flexDirection: 'row',
     marginTop: 15,
+    alignItems: 'center',
   },
 
   link: {
