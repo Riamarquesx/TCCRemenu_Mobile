@@ -42,39 +42,10 @@ export default function Login({ navigation }) {
         <Text style={styles.title}>Login</Text>
 
         <Text style={styles.label}>E-mail:</Text>
-        <TextInput
-          style={styles.input}
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          placeholderTextColor="#AAA"
-        />
+    
 
         <Text style={styles.label}>Senha:</Text>
-        <TextInput
-          style={styles.input}
-          secureTextEntry
-          value={senha}
-          onChangeText={setSenha}
-          placeholderTextColor="#AAA"
-        />
 
-        <TouchableOpacity style={styles.button} onPress={fazerLogin}>
-          <Text style={styles.buttonText}>Entrar</Text>
-        </TouchableOpacity>
-
-        <View style={styles.linksContainer}>
-          <TouchableOpacity onPress={() => navigation.navigate('EsqueciSenha')}>
-            <Text style={styles.link}>Esqueci a senha</Text>
-          </TouchableOpacity>
-
-          <Text style={styles.divider}>|</Text>
-
-          <TouchableOpacity onPress={() => navigation.navigate('CriarConta')}>
-            <Text style={styles.link}>Criar conta</Text>
-          </TouchableOpacity>
-        </View>
 
       </View>
     </ImageBackground>
