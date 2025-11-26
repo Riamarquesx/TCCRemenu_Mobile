@@ -1,139 +1,187 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, ImageBackground, Image, TextInput, TouchableOpacity, Alert } from 'react-native';
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebase.config";
+import React from "react";
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, ScrollView } from "react-native";
 
-export default function Login({ navigation }) {
-  const [email, setEmail] = useState("");
-  const [senha, setSenha] = useState("");
-
-  const fazerLogin = async () => {
-    if (!email || !senha) {
-      Alert.alert("Erro", "Preencha todos os campos!");
-      return;
-    }
-
-    try {
-      // Login Firebase
-      await signInWithEmailAndPassword(auth, email, senha);
-
-      Alert.alert("Sucesso", "Login realizado!");
-
-      // 👉 Redireciona corretamente para a Home
-      navigation.navigate("Home");
-
-    } catch (erro) {
-      console.log("Erro Firebase:", erro);
-      Alert.alert("Erro no login", erro.message);
-    }
-  };
-
+export default function Receitas() {
   return (
-    <ImageBackground
-      source={require('../assets/fundo.png')}
-      style={styles.background}
-    >
-      <Image
-        source={require('../assets/logobranca.png')}
-        style={styles.logo}
-      />
+    <ScrollView style={styles.container}>
 
-      <View style={styles.card}>
-        <Text style={styles.title}>Login</Text>
+      {/* HEADER */}
+      <View style={styles.header}>
+        <Text style={styles.titulo}>Receitas</Text>
+        <Text style={styles.subtitulo}>
+          Descubra receitas deliciosas e saudáveis{"\n"}
+          para todas as ocasiões
+        </Text>
+      </View>
 
-        <Text style={styles.label}>E-mail:</Text>
-    
+      {/* BUSCA */}
+      <View style={styles.buscaWrapper}>
+        <TextInput
+          style={styles.campoBusca}
+          placeholder="Buscar receitas..."
+          placeholderTextColor="#777"
+        />
 
-        <Text style={styles.label}>Senha:</Text>
+        <TouchableOpacity style={styles.btnFiltros}>
+          <Text style={styles.btnFiltrosTexto}>Filtros</Text>
+        </TouchableOpacity>
+      </View>
 
+      {/* LISTA DE RECEITAS */}
+      <View style={styles.listaReceitas}>
+
+        {/* CARD 1 */}
+        <View style={styles.card}>
+          <Image
+            source={require('../assets/sopa.jpg')}
+            style={styles.cardImg}
+          />
+
+          <TouchableOpacity style={styles.favorito}>
+            <Text style={styles.favoritoIcon}>♡</Text>
+          </TouchableOpacity>
+
+          <View style={styles.cardBody}>
+            <Text style={styles.cardTitulo}>Sopa de Legumes Antidesperdício</Text>
+            <Text style={styles.cardDescricao}>
+              Uma sopa nutritiva e saborosa que aproveita vegetais que estão perdendo a firmeza.
+            </Text>
+
+            <View style={styles.cardInfo}>
+              <Text>⏱ 25 min</Text>
+              <Text>👥 4 pessoas</Text>
+              <Text>⭐ 4.7</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* CARD 2 */}
+        <View style={styles.card}>
+          <Image
+            source={require('../assets/frango.jpg')}
+            style={styles.cardImg}
+          />
+
+          <TouchableOpacity style={styles.favorito}>
+            <Text style={styles.favoritoIcon}>♡</Text>
+          </TouchableOpacity>
+
+          <View style={styles.cardBody}>
+            <Text style={styles.cardTitulo}>Frango com Arroz Integral</Text>
+            <Text style={styles.cardDescricao}>
+              Prato completo e balanceado, com proteínas e carboidratos complexos.
+            </Text>
+
+            <View style={styles.cardInfo}>
+              <Text>⏱ 25 min</Text>
+              <Text>👥 4 pessoas</Text>
+              <Text>⭐ 4.7</Text>
+            </View>
+          </View>
+        </View>
 
       </View>
-    </ImageBackground>
+
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  background: {
+  container: {
     flex: 1,
-    width: '100%',
-    height: '100%',
-    alignItems: 'center',
+    backgroundColor: "#f6f6f6",
+    padding: 16,
   },
 
-  logo: {
-    width: 160,
-    height: 160,
-    resizeMode: 'contain',
-  },
-
-  card: {
-    width: '85%',
-    backgroundColor: '#fff',
-    marginTop: 20,
-    paddingVertical: 25,
-    paddingHorizontal: 20,
-    borderRadius: 25,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 5 },
-    elevation: 8,
-  },
-
-  title: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: '#D86B2C',
+  /* HEADER */
+  header: {
     marginBottom: 20,
   },
-
-  label: {
-    alignSelf: 'flex-start',
-    marginLeft: 5,
-    fontSize: 16,
-    marginTop: 15,
-    color: '#D86B2C',
-    fontWeight: 'bold',
+  titulo: {
+    fontSize: 26,
+    fontWeight: "600",
+    color: "#44a67f",
+  },
+  subtitulo: {
+    color: "#666",
+    fontSize: 13,
+    marginTop: 4,
+    lineHeight: 18,
   },
 
-  input: {
-    width: '100%',
-    backgroundColor: '#e6e6e6',
+  /* BUSCA */
+  buscaWrapper: {
+    marginBottom: 20,
+  },
+  campoBusca: {
+    width: "100%",
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    borderColor: "#ddd",
+    borderWidth: 1,
     padding: 12,
-    borderRadius: 10,
-    marginBottom: 15,
-    fontSize: 16,
-  },
-
-  button: {
-    width: '60%',
-    backgroundColor: '#47D7AC',
-    paddingVertical: 12,
-    borderRadius: 10,
-    marginTop: 5,
-  },
-
-  buttonText: {
-    textAlign: 'center',
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
-  },
-
-  linksContainer: {
-    flexDirection: 'row',
-    marginTop: 15,
-    alignItems: 'center',
-  },
-
-  link: {
-    color: '#D86B2C',
+    marginBottom: 8,
     fontSize: 14,
   },
+  btnFiltros: {
+    backgroundColor: "#e7e7e7",
+    padding: 10,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  btnFiltrosTexto: {
+    fontSize: 14,
+    fontWeight: "500",
+  },
 
-  divider: {
-    marginHorizontal: 8,
-    color: '#999',
+  /* CARDS */
+  listaReceitas: {
+    gap: 18,
+  },
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    overflow: "hidden",
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 4,
+  },
+  cardImg: {
+    width: "100%",
+    height: 160,
+  },
+  favorito: {
+    position: "absolute",
+    top: 12,
+    right: 12,
+    backgroundColor: "#fff",
+    padding: 6,
+    borderRadius: 20,
+    elevation: 3,
+  },
+  favoritoIcon: {
+    fontSize: 20,
+  },
+
+  cardBody: {
+    padding: 14,
+  },
+  cardTitulo: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+  cardDescricao: {
+    fontSize: 13,
+    color: "#555",
+    marginBottom: 10,
+  },
+  cardInfo: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    fontSize: 12,
   },
 });

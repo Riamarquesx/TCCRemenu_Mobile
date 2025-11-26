@@ -1,101 +1,156 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, ImageBackground, Image, TextInput, TouchableOpacity, Alert } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  ImageBackground,
+  Image,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform,
+} from 'react-native';
 import { auth, db } from '../firebase.config';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 
-export default function Cadastro({ navigation }) {
-  const [nome, setNome] = useState('');
-  const [email, setEmail] = useState('');
-  const [senha, setSenha] = useState('');
-  const [confirmarSenha, setConfirmarSenha] = useState('');
+export default function Cadastro() {
+  const [form, setForm] = useState({
+    nome: '',
+    email: '',
+    senha: '',
+    confirmarSenha: '',
+  });
+  const [loading, setLoading] = useState(false);
+
+  const traduzirErroFirebase = (errorCode) => {
+    switch (errorCode) {
+      case 'auth/email-already-in-use':
+        return 'Este e-mail já está em uso por outra conta.';
+      case 'auth/invalid-email':
+        return 'O formato do e-mail é inválido.';
+      case 'auth/weak-password':
+        return 'A senha deve ter pelo menos 6 caracteres.';
+      case 'auth/operation-not-allowed':
+        return 'O cadastro por e-mail e senha está desabilitado. Contate o suporte.';
+      default:
+        return 'Ocorreu um erro desconhecido no cadastro. Tente novamente.';
+    }
+  };
 
   const fazerCadastro = async () => {
+    const { nome, email, senha, confirmarSenha } = form;
+
     if (!nome || !email || !senha || !confirmarSenha) {
-      Alert.alert('Erro', 'Preencha todos os campos!');
+      Alert.alert('Atenção', 'Preencha todos os campos!');
       return;
     }
 
     if (senha !== confirmarSenha) {
-      Alert.alert('Erro', 'As senhas não conferem!');
+      Alert.alert('Atenção', 'As senhas não conferem!');
       return;
     }
+
+    setLoading(true);
 
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
       const user = userCredential.user;
 
-      await setDoc(doc(db, 'usuarios', user.uid), {
-        nome: nome,
-        email: email,
+      // Gravação no Firestore em paralelo, não bloqueia a UI
+      setDoc(doc(db, 'usuarios', user.uid), {
+        nome,
+        email,
         criadoEm: new Date(),
-      });
+      }).catch((err) => console.error('Erro ao gravar usuário no Firestore:', err));
 
-      Alert.alert('Sucesso', 'Cadastro realizado!');
-      navigation.navigate('Login');
+      Alert.alert('Sucesso!', 'Sua conta foi criada com sucesso!');
+
+      // Limpar campos
+      setForm({ nome: '', email: '', senha: '', confirmarSenha: '' });
+
     } catch (error) {
-      Alert.alert('Erro no cadastro', error.message);
+      console.error('Erro completo do Firebase:', error);
+      Alert.alert('Erro no cadastro', traduzirErroFirebase(error.code));
+    } finally {
+      setLoading(false);
     }
   };
 
+  const handleChange = (field, value) => {
+    setForm({ ...form, [field]: value });
+  };
+
   return (
-    <ImageBackground source={require('../assets/fundo.png')} style={styles.background}>
-      <Image source={require('../assets/logobranca.png')} style={styles.logo} />
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <ImageBackground source={require('../assets/fundo.png')} style={styles.background}>
+          <Image source={require('../assets/logobranca.png')} style={styles.logo} />
 
-      <View style={styles.card}>
-        <Text style={styles.title}>Cadastro</Text>
+          <View style={styles.card}>
+            <Text style={styles.title}>Cadastro</Text>
 
-        <Text style={styles.label}>Nome completo:</Text>
-        <TextInput
-          style={styles.input}
-          placeholder=""
-          placeholderTextColor="#AAA"
-          value={nome}
-          onChangeText={setNome}
-        />
+            <Text style={styles.label}>Nome completo:</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Digite seu nome"
+              placeholderTextColor="#AAA"
+              value={form.nome}
+              onChangeText={(text) => handleChange('nome', text)}
+            />
 
-        <Text style={styles.label}>E-mail:</Text>
-        <TextInput
-          style={styles.input}
-          placeholder=""
-          placeholderTextColor="#AAA"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
+            <Text style={styles.label}>E-mail:</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="exemplo@email.com"
+              placeholderTextColor="#AAA"
+              value={form.email}
+              onChangeText={(text) => handleChange('email', text)}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
 
-        <Text style={styles.label}>Digite sua senha:</Text>
-        <TextInput
-          style={styles.input}
-          secureTextEntry
-          placeholder=""
-          placeholderTextColor="#AAA"
-          value={senha}
-          onChangeText={setSenha}
-        />
+            <Text style={styles.label}>Digite sua senha:</Text>
+            <TextInput
+              style={styles.input}
+              secureTextEntry
+              placeholder="Mínimo 6 caracteres"
+              placeholderTextColor="#AAA"
+              value={form.senha}
+              onChangeText={(text) => handleChange('senha', text)}
+            />
 
-        <Text style={styles.label}>Confirmar senha:</Text>
-        <TextInput
-          style={styles.input}
-          secureTextEntry
-          placeholder=""
-          placeholderTextColor="#AAA"
-          value={confirmarSenha}
-          onChangeText={setConfirmarSenha}
-        />
+            <Text style={styles.label}>Confirmar senha:</Text>
+            <TextInput
+              style={styles.input}
+              secureTextEntry
+              placeholder="Confirme a sua senha"
+              placeholderTextColor="#AAA"
+              value={form.confirmarSenha}
+              onChangeText={(text) => handleChange('confirmarSenha', text)}
+            />
 
-        <TouchableOpacity style={styles.button} onPress={fazerCadastro}>
-          <Text style={styles.buttonText}>Cadastrar</Text>
-        </TouchableOpacity>
-
-        <View style={styles.linksContainer}>
-          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-            <Text style={styles.link}>Login</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </ImageBackground>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={fazerCadastro}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>Cadastrar</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </ImageBackground>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -105,14 +160,14 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     alignItems: 'center',
+    justifyContent: 'center',
   },
-
   logo: {
     width: 160,
     height: 160,
     resizeMode: 'contain',
+    marginTop: 20,
   },
-
   card: {
     width: '85%',
     backgroundColor: '#fff',
@@ -127,14 +182,12 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 5 },
     elevation: 8,
   },
-
   title: {
     fontSize: 26,
     fontWeight: 'bold',
     color: '#D86B2C',
     marginBottom: 20,
   },
-
   label: {
     alignSelf: 'flex-start',
     marginLeft: 5,
@@ -143,7 +196,6 @@ const styles = StyleSheet.create({
     color: '#D86B2C',
     fontWeight: 'bold',
   },
-
   input: {
     width: '100%',
     backgroundColor: '#e6e6e6',
@@ -152,29 +204,18 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     fontSize: 16,
   },
-
   button: {
     width: '60%',
     backgroundColor: '#47D7AC',
     paddingVertical: 12,
     borderRadius: 10,
-    marginTop: 5,
+    marginTop: 10,
+    alignItems: 'center',
   },
-
   buttonText: {
     textAlign: 'center',
     color: '#fff',
     fontSize: 18,
     fontWeight: '600',
-  },
-
-  linksContainer: {
-    flexDirection: 'row',
-    marginTop: 15,
-  },
-
-  link: {
-    color: '#D86B2C',
-    fontSize: 14,
   },
 });
