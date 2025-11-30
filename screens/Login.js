@@ -19,8 +19,8 @@ export default function Login({ navigation }) {
 
       Alert.alert("Sucesso", "Login realizado!");
 
-      // 👉 Redireciona corretamente para a Home
-      navigation.navigate("Home");
+      // 👉 VAI PARA O MENU DE ABAS (onde Receitas é a Home)
+      navigation.navigate("MenuTabs");
 
     } catch (erro) {
       console.log("Erro Firebase:", erro);
